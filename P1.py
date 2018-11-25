@@ -13,23 +13,23 @@ def ParseSeqFile(filepath):
 
         f=open(filepath)
         f=f.readlines()
-        regex = r"[>|>\s]([a-zA-Z]+)\s(.+)"
-        regex2= r"[>|>\s]" 
+        regex = r"[>|>\s]([a-zA-Z]+)[\s|\t]+(.+)"
+        regex2= r"[>]"
         # regex is the regular expression, which has been defined on "https://regex101.com/" 
         # explanation can be read by putting the expression on the website
 
         pairs = list()
         for line in f:
-                match = re.match(regex, line)
-                match2 = re.match(regex2, line)
+                match = re.search(regex, line)
+                no_data_match = re.search(regex2, line)
                 if match :
                         groups = match.groups()
                         pairs.append(tuple([groups[0], groups[1].replace(" ", "")]))
         #    else   Check for empty lines and/or lines with >but without Infos
-        #        elif line == "\n":
-        #                raise RuntimeError("You should get ride of empty lines first")
-        #        elif match2 :
-        #                raise RuntimeError("There is a line with a >, but no further data")
+                elif line == "\n":
+                       raise RuntimeError("You should get ride of empty lines first")
+                elif no_data_match :
+                       raise RuntimeError("There is a line with a >, but no further data")
         print (pairs)
 
         return pairs
