@@ -30,6 +30,4 @@ def ParseSeqFile(filepath):
                        raise RuntimeError("You should get ride of empty lines first")
                 elif no_data_match :
                        raise RuntimeError("There is a line with a >, but no further data")
-        print (pairs)
-
         return pairs
