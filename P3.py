@@ -1,14 +1,11 @@
+
 import P2
 import numpy as np
 from numpy import log
+from sympy.solvers import solve
+from sympy import Symbol
 
-seqDict = P2.AlignByDP()
-
-# testDict = {(1,2) : ("AAACATCCAAACACCA__ACCCCAG_", "ACCAAACCTGTCCCCATCTAACACCA"), (1,3) : ("AAACATCCAAAC_ACCAACCCCAG_", "AAT_ACCCAACTCGACCTACACCAA"), 
-# (2,3) : ("ACCAAACCTGTCCCCATCTAACACCA", "A—ATACCCAACTCGACCTA-CACCAA")}
-
-# type(testDict)
-
+#---------------------------------------------------------------------------------------------------------#
 def EstimatedPdistance (sequence1, sequence2):
     count=0
     alignmentLength=0
@@ -20,24 +17,30 @@ def EstimatedPdistance (sequence1, sequence2):
         else:
             count += 1
             alignmentLength +=1
-    dValue =  -3/4*log(1- (count / alignmentLength)*4/3)
+    dValue =  -3/4*log(1- (count/alignmentLength)*4/3)
     return dValue
 
+#---------------------------------------------------------------------------------------------------------#
+def ComputeDistMatrix():
+    seqDict = P2.AlignByDP()
 
-def ComputeDistMatrix(alignedSeqDict):
-    print (len(alignedSeqDict.keys()))
-    distMatrix = np.zeros ((len(alignedSeqDict.keys()), len(alignedSeqDict.keys())))
+    print (len(seqDict.keys()))
+    x = Symbol('x', positive = True)
+    a = len(seqDict.keys())
+    matrixSideLength = solve(x**2 - x -2*a, x)
+    
+    distMatrix = np.zeros ((int(matrixSideLength[0]), (int(matrixSideLength[0]))))
 
-    for key in alignedSeqDict:
-        # print (key)
-        # print (alignedSeqDict[key][0], alignedSeqDict[key][1])
-        # print (EstimatedPdistance(alignedSeqDict[key][0], alignedSeqDict[key][1]))
-        distMatrix[key[0]-1, key[1]-1]= round(EstimatedPdistance(alignedSeqDict[key][0], alignedSeqDict[key][1]), 3)
-    # print (distMatrix)
+    for key in seqDict:
+        print (seqDict[key][0])
+        print (seqDict[key][1])
+
+        distMatrix[key[0]-1, key[1]-1]= round(EstimatedPdistance(seqDict[key][0], seqDict[key][1]), 5)
+        distMatrix[key[1]-1, key[0]-1]= round(EstimatedPdistance(seqDict[key][0], seqDict[key][1]), 5)
+
     print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in distMatrix]))
     return distMatrix
 
 
-ComputeDistMatrix(seqDict)
-
+print(EstimatedPdistance("ACCAAACATCCAAACA_CCAAC_CCCAGCC_CTTACGCAATC_ATACAAAGAATATT","ACCAAACCTGTCCCCATCTAACACCAACCCACATATACAAGCTAAACCAAAAATACC"))
 
