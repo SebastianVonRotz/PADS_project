@@ -7,8 +7,35 @@ then used for the traceback which results in the alignment sequences of each pai
 """
 import P1
 import numpy as np
+import re
+
 #---------------------------------------------------------------------------------------------------------#
-# def InputCheck ()
+def InputCheck (sequenceList):
+    if type(sequenceList) != list:
+        raise RuntimeError("Data type is not a list")
+
+    for part in range(len(sequenceList)):
+        if type(sequenceList[part]) != tuple:
+            raise RuntimeError("Part of the list is not a tuple")
+
+        elif type(sequenceList[part][0]) != str:
+            raise RuntimeError("Content of your tuple is not a string")
+      
+        elif type(sequenceList[part][1]) != str:
+            raise RuntimeError("Content of your tuple is not a string")
+
+        elif (bool(re.search("^[ACTG]+$", sequenceList[part][1]))) != True:
+            raise RuntimeError("Second part a tuple does contain other characters than ATCG") 
+    return None
+
+#---------------------------------------------------------------------------------------------------------#
+# In order to link the labels and adjusing numbers in P4 a dictionary is created.
+def LabelDict ():
+    pairs = P1.ParseSeqFile("P1_sequences.txt")
+    labelDict = {}
+    for label in range(len(pairs)):
+        labelDict[label+1] = pairs[label][0]
+    return labelDict
 
 #---------------------------------------------------------------------------------------------------------#
 def TracebackMatrix(sequence1, sequence2):
@@ -48,6 +75,7 @@ def TracebackMatrix(sequence1, sequence2):
             else:
                 array_traceback[i, j] = 3
     return array_traceback
+
 #---------------------------------------------------------------------------------------------------------#
 def  AlignedSequences (TracebackMatrix, sequence1, sequence2):
     i=len(sequence1)
@@ -56,6 +84,8 @@ def  AlignedSequences (TracebackMatrix, sequence1, sequence2):
     alignment1 = list()
     alignment2 = list()
     
+    # The traceback starts in the lower right corner of the tracebackmatrix. Numbers 1,2,3 in each cell 
+    # reperesent from which adjustant cell the max score was calculated.
     while i != 0 or j != 0:                                                        
         if TracebackMatrix[i, j] == 1:
             alignment1.append(sequence1[i-1])
@@ -78,13 +108,15 @@ def  AlignedSequences (TracebackMatrix, sequence1, sequence2):
     print(alignment1)
     print(alignment2)
     return alignment1, alignment2
+    
 #---------------------------------------------------------------------------------------------------------#
 def AlignByDP():
     pairs = P1.ParseSeqFile("P1_sequences.txt")
+    InputCheck(pairs)
     print (pairs)  
 
-    # The KeyMermorizer stores the dictionary keys and its reverse (eg. 1,2 -> 2,1).
-    # If the alignment is already
+    # The KeyMermorizer stores the dictionary keys and its reverse (eg. 1,2 -> 2,1) if the alignment
+    # has already been created it wont repeat the same pair again.
     P2dict = dict()
     KeyMemorizer  =list()
 
@@ -99,3 +131,4 @@ def AlignByDP():
                 P2dict[key]=value
             continue
     return (P2dict)
+

@@ -1,9 +1,16 @@
-
+"""
+Title: Pairwise Distance Matrix
+From: Sebastian von Rotz
+Desription: 
+"""
 import P2
 import numpy as np
 from numpy import log
 from sympy.solvers import solve
 from sympy import Symbol
+#---------------------------------------------------------------------------------------------------------#
+# def InputCheck ()
+
 
 #---------------------------------------------------------------------------------------------------------#
 def EstimatedPdistance (sequence1, sequence2):
@@ -42,5 +49,5 @@ def ComputeDistMatrix():
     return distMatrix
 
 
-print(EstimatedPdistance("ACCAAACATCCAAACA_CCAAC_CCCAGCC_CTTACGCAATC_ATACAAAGAATATT","ACCAAACCTGTCCCCATCTAACACCAACCCACATATACAAGCTAAACCAAAAATACC"))
+
 
