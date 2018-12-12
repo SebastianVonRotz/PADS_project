@@ -1,106 +1,152 @@
 """
-Title: 
+Title: Clustering
 From: Sebastian von Rotz
-Desription:
+Desription: A nested dictionary is created out of the input distance matrix. The clustering (WPGMA)
+happens in several instances, where each run finds the minimum distance value in the nested dictionary
+and calculates the new key pair and the corresponding new distance values. Also the paired key and its 
+corresponding values are deleted and the new nested dictionary is returned. This whole procedure is 
+repeated till only one key is left which represents the final cluster of the binary tree.
 """
-import P3
-import P2
 import numpy as np
+
 #---------------------------------------------------------------------------------------------------------#
 # def InputCheck ()
+# matrix should be 2D / matrix should be the same length each side / matrix should contain only floats/
+# matrix should only be as long as there are labels available
 
 
 #---------------------------------------------------------------------------------------------------------#
-def Create2dDict (matrix):
-    mainDict = {}
-    for i in range(np.shape(matrix)[0]):
+def CreateNestedDict (distMatrix, labelList):
+    """
+    Creates a nested dictionary out of a matrix
+    -distMatrix Is a two dimensinal symmetrical matrix with floats as values
+    -labelList: Contains the labels accordingly to the number key in the distMatrix
+    -returns: A nested dictionary with the distance values
+    """
+
+    distDict = {}
+    for i in range(np.shape(distMatrix)[0]):
         nestedDict = {}
-        for j in range(np.shape(matrix)[0]):
-            if i != j : #and j+1 not in mainDict and i+1 not in nestedDict
-                nestedDict[j+1] = matrix[i,j]
+        for j in range(np.shape(distMatrix)[0]):
+            if i != j :
+                nestedDict[labelList[j]] = distMatrix[i,j]
             continue
+
+        # In order not to fill the main dict with an empty nested dict the following check is applied
         if bool(nestedDict) != False:
-            mainDict[i+1] = nestedDict
-    return mainDict
+            distDict[labelList[i]] = nestedDict
+    return distDict
 
 #---------------------------------------------------------------------------------------------------------#
-def FindMinValue(multiDimDict):
+def FindMinValue(distDict):
+    """
+    Find the smalles value in a dictionary
+    -distDict: Is a two dimensinal symmetrical matrix with floats as values
+    -returns: The same dictionary, the minimum value, corresponding Keys
+    """
+
     #The minimum value and keys are initialized with arbitrary numbers
     minValue = 1000
     minKey = 1
     minKey2 = 2
-    for key in multiDimDict:
-        for key2 in multiDimDict[key]:
-            if multiDimDict[key][key2] < minValue:
-                minValue = multiDimDict[key][key2]
+    # The minimum distance value and the corresponding keys are returned in addition to the input dictionary
+    for key in distDict:
+        for key2 in distDict[key]:
+            if distDict[key][key2] < minValue:
+                minValue = distDict[key][key2]
                 minKey = key
                 minKey2 = key2
-    return multiDimDict, multiDimDict[minKey][minKey2], minKey, minKey2
+
+    return distDict, distDict[minKey][minKey2], minKey, minKey2
 
 #---------------------------------------------------------------------------------------------------------#
-def RecalculateDict (multiDimDict, minValue, minKey, minKey2):
-    for key in multiDimDict:
+def RecalculateDict (distDict, minValue, minKey, minKey2):
+    """
+    Creates a cluster pair and deletes the clustered distance values
+    -distDict: Is a two dimensinal symmetrical matrix with floats as values
+    -minValue: Smallest value in the dictionary
+    -minKey: First corresponding key to the smalles value in the dictionary
+    -minKey2: Second corresponding key to the smalles value in the dictionary
+    -returns: a recalculated distance dictionary with a new clustere pair
+    """
+
+    for key in distDict:
+        # In order to calculate the new distance values with the clustered keys, the dictionary is searched 
+        # for the Key with the minimum distance value (calculated in FindMinValue()).
         if key == minKey:
             newNestedDict = {}
-            for key2 in multiDimDict[key]:
+            # The amount of new distance values in the new clustered key equals the amount of nested keys 
+            # in the key with the minimum distance value
+            for key2 in distDict[key]:
+                # New distance values are recalculated only for the nested key position which are not the 
+                # keys which contain the minimum distance value.
                 if minKey != key2 and minKey2 != key2:
-                    newClusterPairValue = (multiDimDict[minKey][key2] + multiDimDict[minKey2][key2])/2
+                    newClusterPairValue = (distDict[minKey][key2] + distDict[minKey2][key2])/2
                     newNestedDict[key2] = newClusterPairValue
                 continue
+            # The newly calculated nested dictionary is added to the main dictionary (distDict).  
             newKeynestedDict = minKey,minKey2
-            multiDimDict[newKeynestedDict] = newNestedDict
+            distDict[newKeynestedDict] = newNestedDict
             break
 
-    for key in multiDimDict:
-        if newKeynestedDict not in multiDimDict[key] and key != minKey and key != minKey2 and key != newKeynestedDict:
-            newClusterPairValue = (multiDimDict[minKey][key] + multiDimDict[minKey2][key])/2
-            multiDimDict[key][newKeynestedDict] = newClusterPairValue
+    # The new distance values in the clustered nested dictionary also have to be added to the 
+    # other postions (e.g. Dictionary{[(1,2)][3]:value} -> Dictionary{[3][(1,2)]:value}.
+    for key in distDict:
+        if (newKeynestedDict not in distDict[key] and key != minKey and 
+        key != minKey2 and key != newKeynestedDict):
+            newClusterPairValue = (distDict[minKey][key] + distDict[minKey2][key])/2
+            distDict[key][newKeynestedDict] = newClusterPairValue
 
-    del multiDimDict[minKey]
-    del multiDimDict[minKey2]
-    for key in multiDimDict:
-        if minKey in multiDimDict[key]:
-            del multiDimDict[key][minKey]
-    for key in multiDimDict:
-        if minKey2 in multiDimDict[key]: 
-            del multiDimDict[key][minKey2]
-    return multiDimDict
+    # All of the previuosly calculated minimum distance values and the corresponding keys (minKey, minKey2)
+    # are deleted after recalculating the distance values for the new clustered pair key.
+    del distDict[minKey]
+    del distDict[minKey2]
+    for key in distDict:
+        if minKey in distDict[key]:
+            del distDict[key][minKey]
+    for key in distDict:
+        if minKey2 in distDict[key]: 
+            del distDict[key][minKey2]
+
+    return distDict
 
 #---------------------------------------------------------------------------------------------------------#
-def ClusterRun (nestedDict):
-    listWithFourValues = FindMinValue(nestedDict)
-    newNestedDict = RecalculateDict(listWithFourValues[0],listWithFourValues[1],listWithFourValues[2],listWithFourValues[3])
-    return newNestedDict
+def ClusterRun (distDict):
+    """
+    Runs on instance of finding the minimum value in the dict and then clutering it one times.
+    -distDict: Is a two dimensinal symmetrical matrix with floats as values
+    -returns: a recalculated/clustered dictionary
+    """
+
+    # One instance of this function finds the minimum distance value in a matrix and recalculates it 
+    # with the new clustered key pair and the new distance values.
+    listWithFourValues = FindMinValue(distDict)
+    distDict = RecalculateDict(listWithFourValues[0],listWithFourValues[1],
+                                    listWithFourValues[2],listWithFourValues[3])
+    return distDict
 
 #---------------------------------------------------------------------------------------------------------#
-testmatrix = np.array([[0, 17, 21, 31, 23],
-                      [17, 0, 30, 34, 21],
-                      [21, 30, 0, 28, 39],
-                      [31, 34, 28, 0, 43],
-                      [23, 21, 39, 43, 0]]) 
+def Cluster (distMatrix, labelList):
+    """
+    Clusters the distance Matrix till only one key is left, which reperesents the binary tree
+    -distDict: Is a two dimensinal symmetrical matrix with floats as values
+    -labelList: contains the labels accordingly to the number key in the distMatrix
+    -returns: a recalculated/clustered dictionary
+    """
 
-def Cluster ():
-    distMatrix = P3.ComputeDistMatrix()
-    # distMatrix = testmatrix
-    nestedDict = Create2dDict(distMatrix)
+    # A cluster run is repeated till there is only one key in the dictionary, containing the binary tree.
+    nestedDict = CreateNestedDict(distMatrix, labelList)
     for runs in range(np.shape(distMatrix)[0]-1):
         nestedDict = ClusterRun(nestedDict)
 
-    #exchange the numbers with the according labels from P2 (P2.LabelDict())
-    
-    for key in nestedDict:
-        print ("The key is" + " " + key)
+    binaryTreeString = str(nestedDict.keys()).replace("dict_keys([", "").replace("])","")
 
-Cluster()
+    return binaryTreeString
 
 
 
 
-# testmatrix = np.array([[0, 17, 21, 31, 23],
-#                     [17, 0, 30,	34,	21],
-#                     [21, 30, 0,	28,	39],
-#                     [31, 34, 28, 0,	43],
-#                     [23, 21, 39, 43, 0]])   
+ 
 
 
 

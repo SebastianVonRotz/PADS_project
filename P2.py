@@ -5,12 +5,16 @@ Desription: The sequences from P1 are paired, so that each sequences is paired a
 For each pair a Score Matrix with the corresponding traceback Matrix is created. The traceback Matrix is 
 then used for the traceback which results in the alignment sequences of each pair.
 """
-import P1
 import numpy as np
 import re
 
 #---------------------------------------------------------------------------------------------------------#
 def InputCheck (sequenceList):
+    """
+    Raises exceptions if the Input is not correct.
+    -labelSequenceList: list labels and sequences in tuples.
+    -returns: None
+    """
     if type(sequenceList) != list:
         raise RuntimeError("Data type is not a list")
 
@@ -29,16 +33,13 @@ def InputCheck (sequenceList):
     return None
 
 #---------------------------------------------------------------------------------------------------------#
-# In order to link the labels and adjusing numbers in P4 a dictionary is created.
-def LabelDict ():
-    pairs = P1.ParseSeqFile("P1_sequences.txt")
-    labelDict = {}
-    for label in range(len(pairs)):
-        labelDict[label+1] = pairs[label][0]
-    return labelDict
-
-#---------------------------------------------------------------------------------------------------------#
 def TracebackMatrix(sequence1, sequence2):
+    """
+    Creates a score matrix and a traceback matrix.
+    -sequence1: first sequence of a pair
+    -sequence2: second sequence of a pair
+    -returns: matrix for traceback
+    """
     array_zero = np.zeros ((len(sequence1)+1, len(sequence2)+1))
     array_traceback= np.zeros ((len(sequence1)+1, len(sequence2)+1))
     
@@ -48,6 +49,13 @@ def TracebackMatrix(sequence1, sequence2):
 
     # Scoring array starts from 0, therefore -1 for correct character position
     def getScore(i,j):
+        """
+        Returns the score of a match or mismatch.
+        -i: base on a site of sequence1
+        -j: base on a site of sequence2
+        -returns: match or mismatch score
+        """
+
         if sequence1[i-1] == sequence2[j-1]:
             return match
         else:
@@ -60,24 +68,34 @@ def TracebackMatrix(sequence1, sequence2):
     for j in range(len(sequence2)+1):
         array_zero[0,j]=j*indel
     
-    # Filling of the score Matrix and tracking of the max scores in a secon matrix for the traceback
+    # Filling of the score Matrix and tracking of the max scores in a second matrix for the traceback
     for i in range(1, len(sequence1)+1):
         for j in range(1, len(sequence2)+1):
             diagonal_score = array_zero[i-1, j-1] + getScore(i, j)
             upper_score = array_zero[i-1, j]+ indel
             left_score = array_zero[i, j-1] + indel
-            array_zero[i,j] = max(diagonal_score, upper_score, left_score)
 
-            if max(diagonal_score, upper_score, left_score) == diagonal_score:
+            maxScore = max(diagonal_score, upper_score, left_score)
+            array_zero[i,j] = maxScore
+
+            if maxScore == diagonal_score:
                 array_traceback[i, j] = 1
-            elif max(diagonal_score, upper_score, left_score) == upper_score:
+            elif maxScore == upper_score:
                 array_traceback[i, j] = 2     
             else:
                 array_traceback[i, j] = 3
     return array_traceback
 
 #---------------------------------------------------------------------------------------------------------#
-def  AlignedSequences (TracebackMatrix, sequence1, sequence2):
+def  AlignSequences (TracebackMatrix, sequence1, sequence2):
+    """
+    Aligns the two sequences according to the traceback matrix.
+    -TracebackMatrix: Matrix where each cell indicates where score was from
+    -sequence1: Same sequence for creating the traceback matrix
+    -sequence2: Same sequence for creating the traceback matrix
+    -returns: alignment1 and alignment2
+    """
+
     i=len(sequence1)
     j=len(sequence2)
 
@@ -105,30 +123,33 @@ def  AlignedSequences (TracebackMatrix, sequence1, sequence2):
     alignment2.reverse()
     alignment1=''.join(alignment1)
     alignment2=''.join(alignment2)
-    print(alignment1)
-    print(alignment2)
     return alignment1, alignment2
     
 #---------------------------------------------------------------------------------------------------------#
-def AlignByDP():
-    pairs = P1.ParseSeqFile("P1_sequences.txt")
-    InputCheck(pairs)
-    print (pairs)  
-
+def AlignByDP(labelSequenceList):
+    """
+    Creates aligned sequences with given sequences from a list.
+    -labelSequenceList: List with a label and according sequence in a tuple.
+    -returns: Dictionary with two numbers (first and second label of input) as keys and the alignments
+    as values.
+    """
+    
+    InputCheck(labelSequenceList)
+    
     # The KeyMermorizer stores the dictionary keys and its reverse (eg. 1,2 -> 2,1) if the alignment
     # has already been created it wont repeat the same pair again.
-    P2dict = dict()
-    KeyMemorizer  =list()
+    alignedSequencesDict = dict()
+    KeyMemorizer = list()
 
-    for i in range(len(pairs)):
-        for j in range(len(pairs)):
+    for i in range(len(labelSequenceList)):
+        for j in range(len(labelSequenceList)):
             key=i+1,j+1
             if i != j and key not in KeyMemorizer:            
-                print(key)
                 KeyMemorizer.append(key)
                 KeyMemorizer.append(key[::-1])
-                value=AlignedSequences(TracebackMatrix(pairs[i][1],pairs[j][1]),pairs[i][1],pairs[j][1])              
-                P2dict[key]=value
+                value = AlignSequences(TracebackMatrix(labelSequenceList[i][1],labelSequenceList[j][1]),
+                                                       labelSequenceList[i][1],labelSequenceList[j][1])              
+                alignedSequencesDict[key]=value
             continue
-    return (P2dict)
+    return (alignedSequencesDict)
 
