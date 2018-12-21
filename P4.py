@@ -10,10 +10,22 @@ repeated till only one key is left which represents the final cluster of the bin
 import numpy as np
 
 #---------------------------------------------------------------------------------------------------------#
-# def InputCheck ()
-# matrix should be 2D / matrix should be the same length each side / matrix should contain only floats/
-# matrix should only be as long as there are labels available
+def InputCheck (distMatrix, labelList):
+    if np.ndim(distMatrix) != 2:
+         raise RuntimeError("Input Matrix is not 2 dimensional")
+    
+    elif np.shape(distMatrix)[0] != np.shape(distMatrix)[1]:
+        raise RuntimeError("Matrix is not symmetrical")
+    
+    if distMatrix.dtype != "float64":
+        raise RuntimeError("Matrix values are not floats")
 
+    if type(labelList) != list:
+        raise RuntimeError("Input list type is not a list")
+
+    if len(labelList) != np.shape(distMatrix)[0]:
+        raise RuntimeError("Number of labels not equal to Matrix size")
+    return None
 
 #---------------------------------------------------------------------------------------------------------#
 def CreateNestedDict (distMatrix, labelList):
@@ -133,6 +145,7 @@ def Cluster (distMatrix, labelList):
     -labelList: contains the labels accordingly to the number key in the distMatrix
     -returns: a recalculated/clustered dictionary
     """
+    InputCheck(distMatrix, labelList)
 
     # A cluster run is repeated till there is only one key in the dictionary, containing the binary tree.
     nestedDict = CreateNestedDict(distMatrix, labelList)

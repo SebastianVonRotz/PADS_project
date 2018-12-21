@@ -1,7 +1,7 @@
 """
 Title: Parsing a Sequence file
 From: Sebastian von Rotz
-Description: Through iterating a line and matching with regex expression, the name(label) of
+Description: Through iterating a line and matching with regex expression, the name (label) of
 the sequence and the sequence itself is returned in a new data structure.
 """
 import re

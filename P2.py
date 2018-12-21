@@ -3,7 +3,7 @@ Title: Alignmen of Sequences
 From: Sebastian von Rotz
 Desription: The sequences from P1 are paired, so that each sequences is paired against each other once.
 For each pair a Score Matrix with the corresponding traceback Matrix is created. The traceback Matrix is 
-then used for the traceback which results in the alignment sequences of each pair.
+then used for the traceback which results in the aligned sequences of each pair.
 """
 import numpy as np
 import re
@@ -112,10 +112,10 @@ def  AlignSequences (TracebackMatrix, sequence1, sequence2):
             j -= 1
         elif TracebackMatrix[i, j] == 2:
             alignment1.append(sequence1[i-1])
-            alignment2.append("_")
+            alignment2.append("-")
             i -= 1
         else:
-            alignment1.append("_")
+            alignment1.append("-")
             alignment2.append(sequence2[j-1])
             j -= 1
    

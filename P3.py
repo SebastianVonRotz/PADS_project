@@ -10,7 +10,7 @@ from numpy import log
 def InputCheck (alignedSequencesDict):
     """
     Raises exceptions if the Input is not correct.
-    -alignedSequencesDict: Dictionary with number labels as keys and aligned sequences as values.
+    -alignedSequencesDict: Dictionary with number-labels as keys and aligned sequences as values.
     -returns: None
     """
     if type(alignedSequencesDict) != dict:
@@ -48,7 +48,7 @@ def EstimatedPdistance (alignment1, alignment2):
     # The alignment length will be incremented if the the bases at the comparison site are a match or 
     # different and the mismatchCount is incremented if the bases are different.
     for char in range(len(alignment1)):
-        if alignment1[char] == "_" or alignment2[char] == "_":
+        if alignment1[char] == "-" or alignment2[char] == "-":
             continue
         elif alignment1[char] == alignment2[char]:
             alignmentLength +=1
